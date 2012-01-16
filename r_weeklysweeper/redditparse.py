@@ -5,63 +5,57 @@ import re
 from HTMLParser import HTMLParser
 
 submissionreg = r'thing\s\S+\seven|odd'
-sublist = []
-tabd = ['', '	', '		', '			', '				','					']
 
 #these methods get called for every element on page
 class SubmissionHTMLParser(HTMLParser):
   def __init__(self):
     HTMLParser.__init__(self)
     self.withinlinkdiv = -1
-    self.foundvotecount = False
-    
-
-
-
+    self.current_value = 0 # 0 = nothing, 1 = votes, 2 = title this is used to
+                           # link the data and the tag
+    self.tempdata = [0, '', ''] # votes, title, link temporary, before it is put
+                                # into the submission
+    self.sublist = [] # sublist for the submissions
 
   def handle_starttag(self, tag, attrs):
     if self.withinlinkdiv > -1:
-      #data processing goes here
       self.withinlinkdiv += 1
-      print tabd[self.withinlinkdiv], tag, attrs
       if self.withinlinkdiv == 2 and tag == 'div' and attrs[0][1] == 'score unvoted':
-        self.foundvotecount = True
+        self.current_value = 1 # Indicates that the data is the vote
+      if self.withinlinkdiv == 3 and tag == 'a' and attrs[0][0] == 'class':
+        self.current_value = 2 # Indictaes that the data is the title
+        self.tempdata[2] = attrs[1][1] # The link is in the tag, so we take
+                                       # that directly
 
     # selects what I think are the divs that represent submissions and checks to see if regex is not none
     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
       self.withinlinkdiv = 0
-      print '---------new top-----------'
-
 
   def handle_endtag(self, tag):
-    if self.withinlinkdiv == 0:
-      sublist.append(reusedsub)
     if self.withinlinkdiv > -1:
       self.withinlinkdiv -= 1
   def handle_data(self, data):
-    #found vote count div... so reset the boolean and write the data
-    if self.foundvotecount:
-      self.foundvotecount = False
-      reusedsub.votes = data
-      reusedsub.print_out()
-    if self.withinlinkdiv > -1:
-      print tabd[self.withinlinkdiv], data
+    if self.current_value == 1: # If the data is the vote
+      self.tempdata[0] = data
+      self.current_value = 0 # Reset the data indicator
+      
+    if self.current_value == 2: # If the data is the title
+      self.tempdata[1] = data
+      self.current_value = 0 # This is read last, so at this point we can create
+                             # the Submission object
+      self.sublist.append(Submission(self.tempdata[0], self.tempdata[1], self.tempdata[2]))
 
 class Submission():
-  def __init__(self, votes=0, link='', title=''):
+  def __init__(self, votes=0, title='', link=''):
     self.votes = votes
-    self.link = link
     self.title = title
+    self.link = link
   def print_out(self):
     print '----Submission----'
     print self.title
     print self.link
     print 'votes = ' + str(self.votes)
-    print '------------------'
-  def clear(self):
-    self.votes = 0
-    self.link = ''
-    self.title = ''
+    print '------------------\n'
 
 
 def main():
@@ -69,10 +63,8 @@ def main():
   text = f.read()
   parser = SubmissionHTMLParser()
   parser.feed(text)
-  for s in sublist:
+  for s in parser.sublist:
     s.print_out()
-
-reusedsub = Submission()
 
 if __name__ == '__main__':
   main()
