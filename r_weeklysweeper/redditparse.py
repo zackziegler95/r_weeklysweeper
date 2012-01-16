@@ -21,21 +21,25 @@ class SubmissionHTMLParser(HTMLParser):
   def handle_starttag(self, tag, attrs):
     if self.withinlinkdiv > -1:
       #data processing goes here
-      self.withinlinkdiv =+ 1
+      self.withinlinkdiv += 1
       print tabd[self.withinlinkdiv], tag, attrs
 
     # selects what I think are the divs that represent submissions and checks to see if regex is not none
     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
       self.withinlinkdiv = 0
       print '---------new top-----------'
+
+
   def handle_endtag(self, tag):
-    if self.withinlinkdiv > -1:
-      self.withinlinkdiv -= 1
+    if self.withinlinkdiv > -1 and tag == 'p':
+      print str(self.withinlinkdiv)
     if self.withinlinkdiv == 0:
       sublist.append(self.reusedsub)
       self.reusedsub.clear()
+    if self.withinlinkdiv > -1:
+      self.withinlinkdiv -= 1
   def handle_data(self, data):
-    if self.withinlinkdiv > 0:
+    if self.withinlinkdiv > -1:
       print tabd[self.withinlinkdiv], data
 
 class Submission():
@@ -62,7 +66,6 @@ def main():
   parser.feed(text)
   #for s in sublist:
   #  s.print_out()
-
 
 if __name__ == '__main__':
   main()
