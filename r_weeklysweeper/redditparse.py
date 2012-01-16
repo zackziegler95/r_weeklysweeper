@@ -39,21 +39,18 @@ class SubmissionHTMLParser(HTMLParser):
       print tabd[self.withinlinkdiv], data
 
 class Submission():
-  def __init__(self, upvotes=0, downvotes=0, link='', title=''):
-    self.upvotes = upvotes
-    self.downvotes = downvotes
+  def __init__(self, votes=0, link='', title=''):
+    self.votes = votes
     self.link = link
     self.title = title
   def print_out(self):
     print '----Submission----'
     print self.title
     print self.link
-    print 'ups = ' + str(self.upvotes)
-    print 'downs = ' + str(self.downvotes)
+    print 'votes = ' + str(self.votes)
     print '------------------'
   def clear(self):
-    self.upvotes = 0
-    self.downvotes = 0
+    self.votes = 0
     self.link = ''
     self.title = ''
 
