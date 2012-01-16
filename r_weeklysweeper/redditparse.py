@@ -11,15 +11,11 @@ tabd = ['', '	', '		', '			', '				','					']
 class SubmissionHTMLParser(HTMLParser):
   def __init__(self):
     HTMLParser.__init__(self)
-    self.withinlinkdiv = -1
-    self.reusedsub = Submission()
-    
-
-
-
+    #self.withinlinkdiv = -1
+    #self.reusedsub = Submission()
 
   def handle_starttag(self, tag, attrs):
-    if self.withinlinkdiv > -1:
+    """if self.withinlinkdiv > -1:
       #data processing goes here
       self.withinlinkdiv =+ 1
       print tabd[self.withinlinkdiv], tag, attrs
@@ -27,16 +23,22 @@ class SubmissionHTMLParser(HTMLParser):
     # selects what I think are the divs that represent submissions and checks to see if regex is not none
     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
       self.withinlinkdiv = 0
-      print '---------new top-----------'
+      print '---------new top-----------'"""
+    if tag == 'div' and len(attrs) == 3 and attrs[0][0] == 'class'\
+                                          and attrs[1][0] == 'data-fullname'\
+                                          and attrs[2][0] == 'onclick':
+      print "This tag is", tag, "and the attributes are", attrs, len(attrs)
+    
   def handle_endtag(self, tag):
-    if self.withinlinkdiv > -1:
+    """if self.withinlinkdiv > -1:
       self.withinlinkdiv -= 1
     if self.withinlinkdiv == 0:
       sublist.append(self.reusedsub)
-      self.reusedsub.clear()
+      self.reusedsub.clear()"""
   def handle_data(self, data):
+    """
     if self.withinlinkdiv > 0:
-      print tabd[self.withinlinkdiv], data
+      print tabd[self.withinlinkdiv], data"""
 
 class Submission():
   def __init__(self, votes=0, link='', title=''):
