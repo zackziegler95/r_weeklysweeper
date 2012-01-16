@@ -4,32 +4,39 @@ import re
 
 from HTMLParser import HTMLParser
 
+submissionreg = r'thing\s\S+\seven|odd'
+sublist = []
+tabd = ['', '	', '		', '			', '				','					']
 #these methods get called for every element on page
 class SubmissionHTMLParser(HTMLParser):
   def __init__(self):
     HTMLParser.__init__(self)
-    self.printdata = False
-    self.withinlinkdiv = False
-  def handle_starttag(self, tag, attrs):
-    if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2:
-      # selects what I think are the divs that represent submissions
-      submissionreg = r'thing\s\S+\seven|odd'
+    self.withinlinkdiv = -1
+    self.reusedsub = Submission()
+    
 
-      regx = re.search(submissionreg, str(attrs[0][1]))
-      #if the regular expressions matches print out its value!
-      if regx:
-        #handle_sumbmission_tag(tag, attrs)
-        self.printdata = True
-	self.withinlinkdiv = True
-    if self.withinlinkdiv:
-      pass
-      #TODO data entry into submission class
+
+
+
+  def handle_starttag(self, tag, attrs):
+    if self.withinlinkdiv > -1:
+      #data processing goes here
+      self.withinlinkdiv =+ 1
+      print tabd[self.withinlinkdiv], tag, attrs
+
+    # selects what I think are the divs that represent submissions and checks to see if regex is not none
+    if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
+      self.withinlinkdiv = 0
+      print '---------new top-----------'
   def handle_endtag(self, tag):
-    pass
+    if self.withinlinkdiv > -1:
+      self.withinlinkdiv -= 1
+    if self.withinlinkdiv == 0:
+      sublist.append(self.reusedsub)
+      self.reusedsub.clear()
   def handle_data(self, data):
-    if self.printdata:
-      print data
-      self.printdata = False
+    if self.withinlinkdiv > 0:
+      print tabd[self.withinlinkdiv], data
 
 class Submission():
   def __init__(self, upvotes=0, downvotes=0, link='', title=''):
@@ -44,14 +51,20 @@ class Submission():
     print 'ups = ' + str(self.upvotes)
     print 'downs = ' + str(self.downvotes)
     print '------------------'
+  def clear(self):
+    self.upvotes = 0
+    self.downvotes = 0
+    self.link = ''
+    self.title = ''
+
 
 def main():
-  f = urllib.urlopen('http://www.reddit.com/r/Python')
+  f = urllib.urlopen('http://www.reddit.com/r/python')
   text = f.read()
   parser = SubmissionHTMLParser()
   parser.feed(text)
-  s = Submission()
-  s.print_out()
+  #for s in sublist:
+  #  s.print_out()
 
 
 if __name__ == '__main__':
