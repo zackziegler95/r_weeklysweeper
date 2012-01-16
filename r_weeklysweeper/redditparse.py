@@ -7,6 +7,7 @@ from HTMLParser import HTMLParser
 submissionreg = r'thing\s\S+\seven|odd'
 sublist = []
 tabd = ['', '	', '		', '			', '				','					']
+subcnt = 0
 
 #these methods get called for every element on page
 class SubmissionHTMLParser(HTMLParser):
@@ -14,22 +15,27 @@ class SubmissionHTMLParser(HTMLParser):
     HTMLParser.__init__(self)
     self.withinlinkdiv = -1
     self.foundvotecount = False
+    self.foundtitle = False
     
-
-
-
 
   def handle_starttag(self, tag, attrs):
     if self.withinlinkdiv > -1:
       #data processing goes here
       self.withinlinkdiv += 1
       print tabd[self.withinlinkdiv], tag, attrs
+
+      #selects the total votes
       if self.withinlinkdiv == 2 and tag == 'div' and attrs[0][1] == 'score unvoted':
         self.foundvotecount = True
+
+      if self.withinlinkdiv == 3 and tag == 'a' and attrs[0][1] == 'title ':
+	reusedsub.link = attrs[1][0]
+	self.foundtitle = True
 
     # selects what I think are the divs that represent submissions and checks to see if regex is not none
     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
       self.withinlinkdiv = 0
+      reusedsub = Submission()
       print '---------new top-----------'
 
 
@@ -38,12 +44,19 @@ class SubmissionHTMLParser(HTMLParser):
       sublist.append(reusedsub)
     if self.withinlinkdiv > -1:
       self.withinlinkdiv -= 1
+
   def handle_data(self, data):
     #found vote count div... so reset the boolean and write the data
     if self.foundvotecount:
       self.foundvotecount = False
       reusedsub.votes = data
       reusedsub.print_out()
+    #found title data so reset and write!  
+    if self.foundtitle:
+      self.foundtitle = False
+      reusedsub.title = data
+      reusedsub.print_out()
+      #todo fix the write
     if self.withinlinkdiv > -1:
       print tabd[self.withinlinkdiv], data
 
@@ -63,16 +76,17 @@ class Submission():
     self.link = ''
     self.title = ''
 
+reusedsub = Submission()
+
 
 def main():
   f = urllib.urlopen('http://www.reddit.com/r/python')
   text = f.read()
   parser = SubmissionHTMLParser()
   parser.feed(text)
-  for s in sublist:
-    s.print_out()
+  #for s in sublist:
+   # s.print_out()
 
-reusedsub = Submission()
 
 if __name__ == '__main__':
   main()
