@@ -11,23 +11,21 @@ class SubmissionHTMLParser(HTMLParser):
     self.printdata = False
     self.withinlinkdiv = False
   def handle_starttag(self, tag, attrs):
-     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2:
-	# selects what I think are the divs that represent submissions
-	# 
-        submissionreg = r'thing\s\S+\seven|odd'
-        #print tag + str(attrs)
+    if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2:
+      # selects what I think are the divs that represent submissions
+      submissionreg = r'thing\s\S+\seven|odd'
 
-        regx = re.search(submissionreg, str(attrs[0][1]))
-	#if the regular expressions matches print out its value!
-	if regx:
-          #handle_sumbmission_tag(tag, attrs)
-          self.printdata = True
-	  self.withinlinkdiv = True
-     if self.withinlinkdiv:
-       pass
-       #do data entry into submission class
+      regx = re.search(submissionreg, str(attrs[0][1]))
+      #if the regular expressions matches print out its value!
+      if regx:
+        #handle_sumbmission_tag(tag, attrs)
+        self.printdata = True
+	self.withinlinkdiv = True
+    if self.withinlinkdiv:
+      pass
+      #TODO data entry into submission class
   def handle_endtag(self, tag):
-     pass
+    pass
   def handle_data(self, data):
     if self.printdata:
       print data
@@ -48,7 +46,7 @@ class Submission():
     print '------------------'
 
 def main():
-  f = urllib.urlopen('http://www.reddit.com/r/Python/comments/oi8x3/anyone_interested_in_doing_a_casual_project/c3hjalx?context=3')
+  f = urllib.urlopen('http://www.reddit.com/r/Python')
   text = f.read()
   parser = SubmissionHTMLParser()
   parser.feed(text)
