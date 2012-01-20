@@ -1,12 +1,13 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # reddit uses UTF-8 characters as the votes data for hot links. Thus above line is nessecary
 
 import urllib
 import HTMLParser
 import re
 import sys
-
 from HTMLParser import HTMLParser
+
+import commentparse
 
 submissionreg = r'thing\s\S+\seven|odd'
 
@@ -31,9 +32,10 @@ class SubmissionHTMLParser(HTMLParser):
         self.tempdata[2] = attrs[1][1] # The link is in the tag, so we take
                                        # that directly
       # this finds the link to the comment page of the article
-      if self.withinlinkdiv == 4 and tag == 'a' and attrs[0][1] == 'comments':
-	self.current_value = 0 # this is now the last value so reset the current value
-	self.tempdata[3] = attrs[1][1]
+      if self.withinlinkdiv == 4 and tag == 'a' and (attrs[0][1] == 'comments'\
+                                          or attrs[0][1] == 'comments empty'):
+        self.tempdata[3] = attrs[1][1]
+        self.current_value = -1
 
     # selects what I think are the divs that represent submissions and checks to see if regex is not none
     if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(submissionreg, str(attrs[0][1])):
@@ -44,10 +46,8 @@ class SubmissionHTMLParser(HTMLParser):
       self.withinlinkdiv -= 1
   def handle_data(self, data):
     if self.current_value == 1: # If the data is the vote
-      self.tempdata[0] = data
-
       if data == u'•':
-        self.tempdata[0] == 0
+        self.tempdata[0] == -1000
       else:
         self.tempdata[0] = int(data) #data needs to be stored as int
       self.current_value = 0 # Reset the data indicator
@@ -56,15 +56,21 @@ class SubmissionHTMLParser(HTMLParser):
       self.tempdata[1] = data
       self.current_value = 0 # This is read last, so at this point we can create
                              # the Submission object
-      self.sublist.append(Submission(self.tempdata[0], self.tempdata[1], self.tempdata[2]))
-
-class Submission():
-  def __init__(self, votes=0, title='', link=''):
-    self.votes = votes
-    self.title = title
-    self.link = link
-    self.current_value = 0 
-    self.sublist.append(Submission(self.tempdata[0], self.tempdata[1], self.tempdata[2], self.tempdata[3]))
+    if self.current_value == -1: # All the data included
+      if self.tempdata[0] == -1000:
+        self.tempdata[0] = get_comment_score(self.tempdata[3])
+      self.sublist.append(Submission(self.tempdata[0], self.tempdata[1],\
+                                     self.tempdata[2], self.tempdata[3]))
+      self.current_value = 0
+          
+  def get_comment_score(comment_link=''):
+    find_sub_score = r"<div class=\"score\"><span class=\'number\'>(\d+)</span>"
+    if comment_link == '':
+      return None
+    f = urllib.urlopen(comment_link)
+    text = f.read()
+    regexgroup = re.search(find_sub_score, text)
+    return regexgroup.groups()[0]
 
 class Submission():
   def __init__(self, votes=0, title='', link='', commentlink=''):
@@ -88,12 +94,6 @@ def main():
   parser = SubmissionHTMLParser()
   parser.feed(text)
   for s in parser.sublist:
-    s.print_out()
-
-  import commentparse
-  for s in parser.sublist:
-    if s.votes == 0:
-      s.votes = commentparse.get_comment_score(s.commentlink)
     s.print_out()
 if __name__ == '__main__':
   main()
