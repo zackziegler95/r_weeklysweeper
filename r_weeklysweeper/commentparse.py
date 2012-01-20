@@ -3,7 +3,7 @@ import HTMLParser
 import re
 
 find_sub_score = r"<div class=\"score\"><span class=\'number\'>(\d+)</span>"          
-def get_comment_score(comment_link='reddit'):
+def get_comment_score(comment_link=''):
   if comment_link == '':
     return None
   f = urllib.urlopen(comment_link)
