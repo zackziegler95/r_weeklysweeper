@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 # reddit uses UTF-8 characters as the votes data for hot links. Thus above line is nessecary
 
-import urllib
 import HTMLParser
 import re
-import sys
 from HTMLParser import HTMLParser
-
-import commentparse
 
 submissionreg = r'thing\s\S+\seven|odd'
 
@@ -85,15 +81,3 @@ class Submission():
     print 'comment link = ' + self.commentlink
     print 'votes = ' + str(self.votes)
     print '------------------\n'
-
-
-def main():
-  args = sys.argv[1:]
-  f = urllib.urlopen(args[0])
-  text = f.read()
-  parser = SubmissionHTMLParser()
-  parser.feed(text)
-  for s in parser.sublist:
-    s.print_out()
-if __name__ == '__main__':
-  main()
