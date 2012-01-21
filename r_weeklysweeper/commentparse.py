@@ -18,14 +18,14 @@ class CommentHTMLParser(HTMLParser):
     self.getvotes = False  
 
   def handle_starttag(self, tag, attrs):
-    if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(commentreg, str(attrs[0][1])):
+    if tag == 'div' and len(attrs) == 3 and len(attrs[0]) == 2 and re.search(commentreg, str(attrs[0][1])): # selects a comment
       self.incomment =+ 1
       self.pullswitch = True
-    if self.pullswitch == True and tag == 'a' and len(attrs) == 2 and re.search(authorreg, str(attrs[1][1])):
+    if self.pullswitch == True and tag == 'a' and len(attrs) == 2 and re.search(authorreg, str(attrs[1][1])): # selects for authors
       
       self.getauthor = True
 
-    if self.pullswitch and tag == 'span' and attrs[0][1] == 'score unvoted':
+    if self.pullswitch and tag == 'span' and attrs[0][1] == 'score unvoted':  # Selects for votes
       self.getvotes = True
 
 
@@ -35,9 +35,8 @@ class CommentHTMLParser(HTMLParser):
   def handle_data(self, data):
     if self.getauthor:
       self.tempdata[0] = data
-      print data, '<-- a author'
       self.getauthor = False
-      self.comments.append(Comment(self.tempdata[0],self.tempdata[1]))
+      self.comments.append(Comment(self.tempdata[0],self.tempdata[1])) # writes to sublist
       self.pullswitch = False
 
     if self.getvotes:
@@ -57,7 +56,7 @@ class Comment():
     self.childkarma = childkarma
     self.time = time
 
-  def printT(self):
+  def print_out(self):
     print '-'*10
     print self.author
     print self.karma
@@ -71,7 +70,7 @@ def main():  # for testing!
   parser = CommentHTMLParser()
   parser.feed(text)
   for c in parser.comments:
-    c.printT()
+    c.print_out()
 
 
 if __name__ == '__main__':
