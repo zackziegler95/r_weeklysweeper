@@ -18,7 +18,8 @@ class CommentHTMLParser(HTMLParser):
     self.getvotes = False
 
   def close_one_comment(self): # writes the current comment to the comments list for temp storage
-    self.comments.append(Comment(self.tempdata[0],self.tempdata[1], self.tempdata[2])) # writes to sublist
+    self.comments.append(Comment(self.tempdata[0],self.tempdata[1],\
+                                 self.tempdata[2],self.tempdata[2][:-7])) # writes to sublist
     self.pullswitch = False
 
 
@@ -57,12 +58,14 @@ class CommentTree():
 
 
 class Comment():
-  def __init__(self, author='', karma=0, permalink='', childkarma=None, time=None):
+  def __init__(self, author='', karma=0, permalink='',\
+               sub_link='', childkarma=None, time=None):
     self.author = author
     self.karma = karma
     self.childkarma = childkarma
     self.time = time
     self.permalink = permalink
+    self.sub_link = sub_link
 
   def print_out(self):
     print '-'*10
