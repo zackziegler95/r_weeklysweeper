@@ -12,8 +12,10 @@ def main():
   parser = redditparse.SubmissionHTMLParser()
   parser.feed(text)
   dbconn = writetodb.db_connection(dbname='test.db')
+  dbconn.delete_table()
   for s in parser.sublist:
     dbconn.put_sub(s)
+  dbconn.close_conn()
     
 if __name__ == '__main__':
   main()
