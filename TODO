@@ -1,0 +1,5 @@
+Todo List:
+	- Create functionality to take information from the database
+	- Figure out a way to run this realistically
+	- Connect the submissions and comment addition to the database so that
+		when a submission is parsed, all the comments are parsed as well
