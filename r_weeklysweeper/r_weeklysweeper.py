@@ -2,6 +2,7 @@ import sys
 import urllib
 
 import redditparse
+import writetodb
 
 def main():
   #args = sys.argv[1:]
@@ -10,8 +11,9 @@ def main():
   text = f.read()
   parser = redditparse.SubmissionHTMLParser()
   parser.feed(text)
+  dbconn = writetodb.db_connection(dbname='test.db')
   for s in parser.sublist:
-    s.print_out()
+    dbconn.put_sub(s)
     
 if __name__ == '__main__':
   main()
